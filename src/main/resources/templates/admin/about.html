@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('关于本站')" ></head>
+
+
+
+<body class="hold-transition skin-blue  layout-boxed">
+
+<script>
+    $(function(){
+    });
+</script>
+
+<div class="wrapper" id="workingArea">
+  <div th:replace="include/admin/adminNavigator::html" ></div>
+  <div th:replace="include/admin/adminSidebar::html" ></div>
+
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1>
+        	关于本站
+      </h1>
+    </section>
+
+    <section class="content">
+		<div class="row">
+	        <div class="col-xs-12">
+	          <div class="box">
+	            <div class="box-header">
+<!-- 	              <h3 class="box-title">配置清单</h3> -->
+	
+<!-- 	              <div class="box-tools"> -->
+<!-- 	                <div class="input-group input-group-sm" style="width: 150px;"> -->
+<!-- 	                  <input type="text" name="table_search" class="form-control pull-right" placeholder="Search"> -->
+	
+<!-- 	                  <div class="input-group-btn"> -->
+<!-- 	                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button> -->
+<!-- 	                  </div> -->
+<!-- 	                </div> -->
+<!-- 	              </div> -->
+	            </div>
+	            <!-- /.box-header -->
+	            <div class="box-body table-responsive no-padding">
+	              
+	             <div style="padding:15px">
+	             	<p>大家好，我是how2j站长。 2019年1月，初为人父。 作为一名敲代码熟练工，利用工作技能，为心爱的宝宝制作了这么一个相册。</p>
+	             	<p>相信还有一样的程序员爸爸和我一样，都想为心爱的宝宝留下永恒的回忆，记录他/她每天的成长点滴，在工作辛劳之余，拿出来翻看，真是说不出的满足。</p>	
+	             	<p>于是把这个相册网站，做成开源的，方便大家使用。 有兴趣学习的学员，也可以研究一下里面的一些技术，提高自己的技能。</p>
+	             	<p>
+	             	关于本相册如何安装，使用，以及相关源码获取办法和交流，请点击：
+	             	<a href="http://how2j.cn/k/opensource/opensource-mybaby/2019.html">http://how2j.cn/k/opensource/opensource-mybaby/2019.html</a>
+	             	</p>	
+	             	
+	             	
+	             		
+	             </div>
+	              
+	              
+	            </div>
+	          </div>
+	          
+	          
+	          
+	          
+
+					          
+	        </div>
+	       
+        
+	        
+	      </div>
+	      
+    </section>
+  </div>
+ 	<div th:replace="include/admin/adminFooter::html" ></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+th.thinth{
+	width:50px;
+	
+}
+th.dateth{
+	width:150px;
+}
+
+div.pageDiv{
+	text-align:center;
+}
+
+span.drag-handle{
+    margin-right: 10px;
+    font: bold 20px Sans-Serif;
+    color: #5F9EDF;
+    cursor: move;
+    cursor: -webkit-grabbing;
+}
+.videoOnFront{
+	cursor: pointer;	
+}
+.uploadBar{
+/* 	display:none; */
+}
+
+.preview{
+	margin:10px;	
+}
+.eachPreviewDiv{
+	margin:5px;
+}
+.eachPreviewDivSample{
+	display:none;
+}
+.videoUploadBar{
+	display:none;
+}
+.waitServerDeal{
+	display:none;
+}
+div.pageDiv li{
+	font-size:1.5em;
+}

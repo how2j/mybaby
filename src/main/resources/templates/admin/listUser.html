@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('用户管理')" ></head>
+
+
+
+<body class="hold-transition skin-blue  layout-boxed">
+
+<script>
+    $(function(){
+        var data4Vue = {
+                uri:'users',
+                beans: [],
+                bean: { id: 0, name: '', code:'' },
+                bean4update: { id: 0, name: '', code:'' },
+                pagination:{},
+                file: null,
+                showAdd:true,
+                showUpdate:false,
+            };
+
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    this.list(0);
+                },
+                methods: {
+                    list:function(start){
+                        var url =  this.uri+ "?start="+start;
+                        axios.get(url).then(function(response) {
+                            vue.pagination = response.data;
+                            vue.beans = response.data.content	;
+                            
+                            console.log(vue.beans);
+                        });
+                    },
+                    add: function () {
+                        if(!checkEmpty(this.bean.name, "用户名称"))
+                            return;
+                        var url = this.uri;
+
+                        //axios.js 上传文件要用 formData 这种方式
+                        var formData = new FormData();
+//                         formData.append("image", this.file);
+                        formData.append("name", this.bean.name);
+                        formData.append("code", this.bean.code);
+                        
+                        console.log(this.bean);
+                        
+                        axios.post(url,formData).then(function(response){
+                            vue.list(0);
+                            vue.bean = { id: 0, name: '', code: ''};
+                            $("#userPic").val('');
+                            vue.file = null;
+                            
+                            document.getElementById("nameInput").focus();
+                        });
+                        
+                        
+                    },
+                    get:function(id){
+                        var url = this.uri+"/"+id;
+                        axios.get(url).then(function(response) {
+                            vue.bean4update = response.data;
+                        });
+                        this.showAdd = false;
+                        this.showUpdate = true;
+                    },
+                    cancleEdit:function(){
+                        this.showAdd = true;
+                        this.showUpdate = false;
+                    },
+                    update:function () {
+                        if(!checkEmpty(this.bean4update.name, "用户名称"))
+                            return;
+                        var url = this.uri+"/"+this.bean4update.id;
+
+                        //axios.js 上传文件要用 formData 这种方式
+                        var formData = new FormData();
+                        formData.append("name", this.bean4update.name);
+                        formData.append("code", this.bean4update.code);
+                        console.log("this.bean4update.code:"+this.bean4update.code);
+                        axios.put(url,formData).then(function(response){
+                        	vue.list(0);
+                            vue.showAdd = true;
+                            vue.showUpdate = false;
+                            vue.bean4update = { id: 0, name: '', code: ''};
+                        });
+                    },                    
+                    deleteBean: function (id) {
+                        if(!checkDeleteLink())
+                            return;
+                        var url = this.uri+"/"+id;
+                        axios.delete(url).then(function(response){
+                            if(0!=response.data.length){
+                                alert(response.data);
+                            }
+                            else{
+                                vue.list(0);
+                            }
+                        });
+                    },
+                    getFile: function (event) {
+                        this.file = event.target.files[0];
+                    },
+                    jump: function(page){
+                        jump(page,vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function(start){
+                        jumpByNumber(start,vue);
+                    }
+                }
+            });    	
+    	
+    });
+
+</script>
+
+<div class="wrapper" id="workingArea">
+  <div th:replace="include/admin/adminNavigator::html" ></div>
+  <div th:replace="include/admin/adminSidebar::html" ></div>
+
+
+
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1>
+        	用户管理
+        <small>用户管理</small>
+      </h1>
+    </section>
+
+    <section class="content">
+		<div class="row">
+	        <div class="col-xs-12">
+	          <div class="box">
+	            <div class="box-header">
+	              <h3 class="box-title">用户清单</h3>
+	
+	              <div class="box-tools">
+	                <div class="input-group input-group-sm" style="width: 150px;">
+	                  <input type="text" name="table_search" class="form-control pull-right" placeholder="Search">
+	
+	                  <div class="input-group-btn">
+	                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+	                  </div>
+	                </div>
+	              </div>
+	            </div>
+	            <!-- /.box-header -->
+	            <div class="box-body table-responsive no-padding">
+	              <table class="table table-hover">
+	                <tbody><tr>
+	                  <th class="thinth">id</th>
+	                  <th style="width:200px">名称</th>
+	                  <th>代码</th>
+	                  <th class="dateth">创建日期</th>
+	                  <th class="thinth">图片</th>
+	                  <th class="thinth">编辑</th>
+	                  <th class="thinth">删除</th>
+	                </tr>
+	                
+	                <template v-for="bean in beans ">
+		                <tr rowspan="2" >
+		                  <td>{{bean.id}}</td>
+		                  <td>
+			                  <a :title="bean.name" href="#nowhere" @click="get(bean.id)">
+			                  	{{bean.name | shortStringFilter(12)}}
+			                  </a>
+		                  </td>
+		                  <td>
+		                  	   <a :title="bean.code" href="#nowhere" @click="get(bean.id)">
+			                  	{{bean.code | shortStringFilter(25)}}
+			                  </a>
+		                  </td>
+		                  <td>{{bean.createDate|formatDateFilter}}</td>
+		                  <td>
+		                  	<a :href="'admin_property_list?cid=' + bean.id "> <span class="glyphicon glyphicon-picture"></span> </a>
+		                  	
+		                  	
+		                  	
+		                  </td>
+						  <td>
+		                    <a href="#nowhere" @click="get(bean.id)"><span class="glyphicon glyphicon-edit"></span></a>
+        		          </td>
+		                  <td>
+	          		          <a href="#nowhere"  @click="deleteBean(bean.id)"><span class="   glyphicon glyphicon-trash"></span></a>
+    		              </td>
+		                </tr>
+
+	                </template>
+	                
+	              </tbody></table>
+	            </div>
+	          </div>
+	          
+	          <div th:replace="include/admin/adminPage::html" ></div>
+	          
+	          <div v-show="showAdd" class="box box-primary" style="width:580px;margin:10px auto">
+		            <div class="box-header with-border">
+		              <h3 class="box-title">新增用户</h3>
+		            </div>
+		
+		           
+		              <div class="box-body">
+		                <div class="form-group">
+		                  <label for="exampleInputEmail1">用户名称</label>
+		                  <input id="nameInput" type="text" class="form-control" @keyup.enter="add" v-model.trim="bean.name" placeholder="名称">
+		                </div>
+
+		              </div>
+		
+		              <div class="box-footer">
+		                <button type="button" @click="add" class="btn btn-primary">提交</button>
+		              </div>
+	          </div>
+	          
+	          <div v-show="showUpdate" class="box box-info" style="width:580px;margin:10px auto">
+		            <div class="box-header with-border">
+		              <h3 class="box-title">修改用户</h3>
+		            </div>
+		
+		           
+		              <div class="box-body">
+		                <div class="form-group">
+		                  <label for="exampleInputEmail1">用户名称</label>
+		                  <input type="text" class="form-control" @keyup.enter1="update" v-model.trim="bean4update.name" placeholder="名称">
+		                </div>
+
+		              </div>
+		
+		              <div class="box-footer">
+		                <button type="button" @click="update" class="btn btn-primary">提交</button>
+		                <button type="button" @click="cancleEdit" class="btn btn-primary">取消</button>
+		              </div>
+	          </div>
+	          
+<!-- 		    <div class="panel panel-warning addDiv"> -->
+<!-- 		        <div class="panel-heading">新增用户</div> -->
+<!-- 		        <div class="panel-body"> -->
+<!-- 		            <table class="addTable"> -->
+<!-- 		                <tr> -->
+<!-- 		                    <td>用户名称</td> -->
+<!-- 		                    <td><input  @keyup.enter="add" v-model.trim="bean.name" type="text" class="form-control"></td> -->
+<!-- 		                </tr> -->
+<!-- 		                <tr> -->
+<!-- 		                    <td>用户描述</td> -->
+<!-- 		                    <td><input  @keyup.enter="add" v-model.trim="bean.text" type="text" class="form-control"></td> -->
+<!-- 		                </tr> -->
+<!-- 		                <tr class="submitTR"> -->
+<!-- 		                    <td colspan="2" align="center"> -->
+<!-- 		                        <a href="#nowhere"  @click="add" class="btn btn-success">提交</a> -->
+<!-- 		                    </td> -->
+<!-- 		                </tr> -->
+<!-- 		            </table> -->
+<!-- 		        </div> -->
+<!-- 		    </div>		           -->
+	          
+	        </div>
+	       
+        
+	        
+	      </div>
+    </section>
+  </div>
+	<div th:replace="include/admin/adminFooter::html" ></div>
+</div>
+
+
+</body>
+</html>

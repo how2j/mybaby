@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('图片管理')" ></head>
+
+
+
+<body class="hold-transition skin-blue layout-boxed ">
+
+<script>
+    $(function(){
+    	var pid = getUrlParms("pid");
+        var data4Vue = {
+                uri:'pictures',
+                beans: [],
+                beans4deleted: [],
+                bean: { id: 0, name: ''},
+                bean4update: { id: 0, name: ''},
+                pagination:{},
+                files: []
+            };
+
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    this.list(0);
+                },
+                methods: {
+                    list:function(start){
+                    	var url =  "posts/"+pid+"/"+this.uri+"?start="+start;
+                        axios.get(url).then(function(response) {
+                            vue.pagination = response.data;
+                            vue.beans = response.data.content;
+                        });
+                        this.listDeleted(0);
+                    },
+                    listDeleted:function(start){
+                    	var url =  "posts/"+pid+"/deleted/"+this.uri+"?start="+start;
+                        axios.get(url).then(function(response) {
+                            vue.pagination = response.data;
+                            vue.beans4deleted = response.data.content;
+                        });
+                    },
+                    add: function () {
+                        var url = this.uri+"?pid="+pid;
+
+                        //axios.js 上传文件要用 formData 这种方式
+                        
+                        var count = 0;
+                        var count4preview = 0;
+                        var uploadedNumber = 0;
+                        var previewDiv = $(".preview");
+                        $("#picturePic").hide();
+                        
+
+                        
+                        
+                        for (var i = 0; i < this.files.length; i++) {
+							var file = this.files[i];
+                        	var reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            function imageLoaded(index_preview){
+                            	return function(){
+                                	var cloned = $(".eachPreviewDivSample").clone();
+                                	cloned.removeClass("eachPreviewDivSample");
+                                	cloned.addClass("eachPreviewDiv");
+                                	cloned.find(".previewImage").attr("src",this.result);
+                                	console.log("index_preview:"+index_preview);
+                                	cloned.find(".uploadBar").attr("index",index_preview);
+                                	cloned.appendTo(previewDiv);
+                                	count4preview++;
+                                	console.log(count4preview);
+                                	
+                                	if(count4preview==vue.files.length){
+                                        for (var j= 0; j < vue.files.length; j++) {
+                                        	function myUploadProgress(index) {
+                                        		  return function(progress) {
+          		                                    if (progress.lengthComputable) {
+    	  		                                        var num = Math.round((progress.loaded / progress.total) * 100);
+    	  		                                        $(".uploadBar[index="+index+"]").css("width", num+"%");
+    	  		                                        $(".uploadBar[index="+index+"]").html(num+"%");
+                                        		  		if(100==num){
+                                        		  			uploadedNumber++;
+                                        		  			console.log("uploadedNumber:"+uploadedNumber);
+                                        		  			if(uploadedNumber==count4preview){
+                	                                        	$(".waitServerDeal").show();
+                	                                        	$(".uploadPart").hide();
+                                        		  			}
+                                        		  		}
+                                        		  			
+          		                                    }
+                                        		  }
+                                        	}
+                                        	
+                                        	var formData = new FormData();
+                							var file = vue.files[j];
+                	                        formData.append("image", file);
+            		                        config = {
+            		                                headers: {
+            		                                    'Content-Type': 'multipart/form-data'
+            		                                },
+            		                                onUploadProgress: myUploadProgress(j)
+            		                        };
+            		                        axios.post(url,formData,config).then(function(response){
+            		                            count++;
+            		                            console.log("count:"+count);
+            		                            console.log("vue.files.length:"+vue.files.length);
+            		                            if(count==vue.files.length){
+    	                                        	$(".waitServerDeal").hide();
+    	                                        	$(".uploadPart").show();
+            			                        	vue.list(0);
+            			                            vue.bean = { id: 0, name: ''};
+            			                            $("#picturePic").val('');
+            			                            $("#picturePic").show();
+            			                            vue.file = null;
+            			                            
+            			                            var previewDiv = $(".preview");
+            			                            $(".eachPreviewDiv").hide();
+            		                            }
+            		                        });  
+                                        	
+                                        }
+                                	}    
+                            	}
+                            }
+                            reader.onload = imageLoaded(i);
+
+	                   
+                    	}
+
+//                         formData.append("name", this.bean.name);
+// 						if(true)
+// 							return;
+
+                    },
+                    get:function(id){
+                        var url = this.uri+"/"+id;
+                        axios.get(url).then(function(response) {
+                            vue.bean4update = response.data;
+                        });
+                        $("#modal4edit").modal('show');
+                        
+                        $("#modal4edit").on("shown.bs.modal",function(){
+                            $("#name4update").focus();
+                          });
+                        
+                        
+
+                    },
+                    update:function () {
+                        var url = this.uri+"/"+this.bean4update.id;
+
+                        //axios.js 上传文件要用 formData 这种方式
+                        var formData = new FormData();
+                        console.log(this.bean4update.name);
+                        formData.append("name", this.bean4update.name);
+                        axios.put(url,formData).then(function(response){
+                        	vue.list(0);
+                        });
+                        $("#modal4edit").modal('hide');
+                    },                    
+                    deleteBean: function (id) {
+                        var url = this.uri+"/"+id;
+                        axios.delete(url).then(function(response){
+                            if(0!=response.data.length){
+                                alert(response.data);
+                            }
+                            else{
+                                vue.list(0);
+                            }
+                        });
+                    },
+                    recoverBean: function (id) {
+                        var url = this.uri+"/recover/"+id;
+                        axios.get(url).then(function(response){
+                            if(0!=response.data.length){
+                                alert(response.data);
+                            }
+                            else{
+                                vue.list(0);
+                            }
+                        });
+                    },
+                    getFile: function (event) {
+                        this.files = event.target.files;
+                        vue.add();
+                    },
+                    jump: function(page){
+                        jump(page,vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function(start){
+                        jumpByNumber(start,vue);
+                    },
+                    show: function (id) {
+						$("#originalPicture").attr("src",'uploaded/picture/'+id+'.jpg');
+                    }
+                }
+            });    	
+            
+            var fixHelperModified = function(e, tr) {
+                var $originals = tr.children();
+                var $helper = tr.clone();
+                $helper.children().each(function(index) {
+                    $(this).width($originals.eq(index).width())
+                });
+                return $helper;
+            },
+            updateIndex = function(e, ui) {
+                $('td.index', ui.item.parent()).each(function (i) {
+                    $(this).attr("index",i + 1);
+                });
+                
+                var indexJsons = new Array();
+                $("td.index").each(function(){
+                	var id = $(this).attr("theid");
+                	var index  = $(this).attr("index");
+                	var indexJson = {id:'',index:''};
+                	indexJson.id = id;
+                	indexJson.index = index;
+                	indexJsons.push(indexJson);
+                });
+                $.ajax({
+                    type:"post",
+                    url:"pictures/adjustIndex",
+                    datatype:"json",
+                    data:{indexJsons:JSON.stringify(indexJsons)},
+                    success:function(data){
+                    	console.log(data);
+                    }
+                });
+            };
+            if(!isMobile){
+    		    $("#sort tbody").sortable({
+    		        helper: fixHelperModified,
+    		        stop: updateIndex
+    		    }).disableSelection();
+            }
+    	
+    });
+
+</script>
+
+
+
+<div class="wrapper" id="workingArea">
+  <div th:replace="include/admin/adminNavigator::html" ></div>
+  <div th:replace="include/admin/adminSidebar::html" ></div>
+
+
+
+
+  <div class="content-wrapper">
+    <section class="content-header">
+<!--       <h1> -->
+<!--         	图片管理 -->
+<!--         <small>图片管理</small> -->
+<!--       </h1> -->
+    </section>
+
+    <section class="content">
+		<div class="row">
+	        <div class="col-xs-12">
+	          <div class="box" v-show="beans.length!=0 || ( beans4deleted.length==0 && beans.length==0)">
+	            <div class="box-header">
+	              <h3 class="box-title">图片清单 </h3>         <small class="sortable">( 拖动可排序 )</small>
+	              
+	            </div>
+	            <!-- /.box-header -->
+	            <div class="box-body table-responsive no-padding" >
+		              <table id="sort" class="table table-hover">
+		                <tr>
+						  <th style="width:50px">图片</th>
+		                  <th style="width:100px">名称</th>
+<!-- 		                  <th class="dateth">创建日期</th> -->
+	
+<!-- 		                  <th class="thinth">编辑</th> -->
+		                  <th class="thinth" title="宝宝的照片，如何舍得删除，隐藏就就好啦">隐藏</th>
+		                </tr>
+		              	
+		                <tbody>
+			                <template v-for="bean in beans ">
+				                <tr rowspan="2" >
+				                  <td :theid="bean.id" class="index" index="" >
+				                  <a href="#nowhere"  @click="show(bean.id)" data-toggle="modal" data-target="#modal-info">
+				                  <img style="width:50px;height:50px"  :src="'uploaded/smallPicture/'+bean.id+'.jpg'">
+				                  </a>
+				                  </td>
+				                  <td>
+					                  <a :title="bean.name" href="#nowhere" @click="get(bean.id)">
+					                  	{{bean.name | shortStringFilter(12) | stringEmpty}}
+					                  </a>
+				                  </td>
+<!-- 				                  <td>{{bean.createDate|formatDateFilter}}</td> -->
+				                  
+<!-- 								  <td> -->
+<!-- 				                    <a href="#nowhere" @click="get(bean.id)"><span class="glyphicon glyphicon-edit"></span></a> -->
+<!-- 		        		          </td> -->
+				                  <td>
+			          		          <a v-show="bean.status=='normal'" href="#nowhere"  @click="deleteBean(bean.id)"><span title="宝宝的照片，如何舍得删除，隐藏就就好啦" class="glyphicon glyphicon-trash"></span></a>
+		    		              </td>
+				                </tr>
+			                </template>
+			            </tbody>
+			          </table>
+	              
+
+
+	            </div>
+	            
+		                     
+	          </div>
+	          
+					<div  class="box"  v-show="beans4deleted.length!=0">
+				            <div class="box-header">
+				              <h3 class="box-title">图片回收站</h3>  <small class="sortable">( 不可拖动可排序  )</small>
+				            </div>	       
+			              <table  class="table table-hover">
+			              	<thead>
+				                <tr>
+				                  <th  style="display:none"  class="thinth index">index</th>
+								  <th >图片</th>
+				                  <th >名称</th>
+<!-- 				                  <th class="dateth">创建日期</th> -->
+			
+<!-- 				                  <th class="thinth">编辑</th> -->
+				                  <th class="thinth">显示</th>
+				                </tr>
+			              	</thead>
+			              	<tbody>
+				                <template v-for="bean in beans4deleted ">
+					                <tr rowspan="2" >
+					                  <td :theid="bean.id" style="display:none" class="index">{{bean.id*10}}</td>
+					                  <td>
+					                  <a href="#nowhere"  @click="show(bean.id)" data-toggle="modal" data-target="#modal-info">
+					                  <img style="width:50px;height:50px" :src="'uploaded/picture/'+bean.id+'.jpg'">
+					                  </a>
+					                  </td>
+					                  <td>
+		<!-- 				                  <a :title="bean.name" href="#nowhere" @click="get(bean.id)"> -->
+		<!-- 				                  	{{bean.name | shortStringFilter(12) | pictureNameEmpty}} -->
+		<!-- 				                  </a> -->
+												<span class="text-muted">{{bean.name | shortStringFilter(12) | pictureNameEmpty}}</span>
+						                  
+					                  </td>
+<!-- 					                  <td>{{bean.createDate|formatDateFilter}}</td> -->
+					                  
+<!-- 									  <td> -->
+		<!-- 			                    <a href="#nowhere" @click="get(bean.id)"><span class="glyphicon glyphicon-edit"></span></a> -->
+<!-- 			        		          </td> -->
+
+			    		              <td>
+				          		          <a v-show="bean.status=='delete'" href="#nowhere"  @click="recoverBean(bean.id)"><span title="宝宝的照片，如何舍得删除，隐藏就就好啦" class="glyphicon glyphicon-refresh"></span></a>
+			    		              </td>
+					                </tr>
+			
+				                </template>	              	
+			              	</tbody>
+			              </table>		                 
+		            </div>	   	          
+	          
+<!-- 	          <div th:replace="include/admin/adminPage::html" ></div> -->
+	          
+	          <div  class="box box-primary" style="margin:10px auto">
+		            <div class="box-header with-border">
+		              <h3 class="box-title">新增图片</h3>
+		            </div>
+		
+		              <div class="box-body">
+<!-- 		                <div class="form-group"> -->
+<!-- 		                  <label for="exampleInputEmail1">图片名称</label> -->
+<!-- 		                  <input type="text" class="form-control" @keyup.enter1="add" v-model.trim="bean.name" placeholder="图片名称，可以不填"> -->
+<!-- 		                </div> -->
+		              
+		              	<div class="form-group" class="waitServerDeal">
+		                	<div style="margin:10px">已经上传完毕，等待服务端进行图片处理，长短依图片大小而定  <img src="img/preloader.gif"> </div>
+						</div>
+						
+		                <div class="form-group" class="uploadPart">
+		                  	<label for="exampleInputPassword1">图片文件</label>
+							
+							
+							
+							<input id="picturePic" accept="image/*" type="file" multiple="true" name="image" @change="getFile($event)" />	
+
+
+							<div class="preview">
+								<div class="eachPreviewDivSample">
+									<table width="100%">
+										<tr>
+											<td width="100px">
+												<img class="previewImage" src="" style="width:100px;height:100px">
+											</td>
+											<td style="padding-left:20px">
+											  <div class="uploadBar progress-bar progress-bar-striped active" style="width: 10%">
+											    0%
+											  </div>												
+											</td>
+										</tr>
+									</table>
+								</div>
+							</div>
+							
+							
+							
+						</div>
+		              </div>
+	          	
+					
+	              <div class="box-footer">
+<!-- 		                <button type="button" @click="add" class="btn btn-primary">提交</button> -->
+	              </div>					
+	          </div>
+	        </div>
+	        
+	        <div class="modal modal-info fade" id="modal-info">
+	          <div class="modal-dialog">
+	            <div class="modal-content">
+	              <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                  <span aria-hidden="true">&times;</span></button>
+	                <h4 class="modal-title">图片</h4>
+	              </div>
+	              <div class="modal-body">
+	              
+	              	<img style="width:100%" id="originalPicture" src=""/>
+	              	
+	              	
+	              </div>
+	              <div class="modal-footer">
+	                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">关闭</button>
+<!-- 	                <button type="button" class="btn btn-outline">Save changes</button> -->
+	              </div>
+	            </div>
+	            <!-- /.modal-content -->
+	          </div>
+	          <!-- /.modal-dialog -->
+	        </div>
+	        
+				<div class="modal modal-default fade" id="modal4edit">
+		          <div class="modal-dialog">
+		            <div class="modal-content">
+		              <div class="modal-header">
+		                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		                  <span aria-hidden="true">×</span></button>
+		                <h4 class="modal-title">修改图片名称</h4>
+		              </div>
+
+			          <div class="box box-info" style="margin:10px auto">
+							<div class="box-header with-border">
+							  <h3 class="box-title">修改图片名称</h3>
+							</div>
+		
+			              <div class="box-body">
+			                <div class="form-group">
+			                  <label for="exampleInputEmail1">图片名称</label>
+			                  <input type="text" class="form-control" id="name4update" @keyup.enter="update" v-model.trim="bean4update.name" placeholder="图片名称">
+			                  <input type="hidden" v-model.trim="bean4update.id">
+			                </div>
+			              </div>
+			
+			          </div>		              
+		              
+		              
+		              <div class="modal-footer">
+		                <button type="button" class="btn btn-primary pull-left" data-dismiss="modal">关闭</button>
+		                <button type="button" @click="update" class="btn btn-primary">提交</button>
+		              </div>
+		            </div>
+		            <!-- /.modal-content -->
+		          </div>
+		          <!-- /.modal-dialog -->
+		        </div>		        	       
+        
+        
+	        
+	      </div>
+    </section>
+  </div>
+	<div th:replace="include/admin/adminFooter::html" ></div>
+</div>
+
+
+</body>
+</html>

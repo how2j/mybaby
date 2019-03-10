@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('配置信息')" ></head>
+
+
+
+<body class="hold-transition skin-blue  layout-boxed">
+
+<script>
+    $(function(){
+	        var data4Vue = {
+                uri:'configs',
+                beans: []
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    this.list();
+                },
+                methods: {
+                    list:function(){
+                        var url =  this.uri;
+                        axios.get(url).then(function(response) {
+                            vue.beans = response.data;
+                            vue.$nextTick(function(){
+                            	$(".datepicker").datepicker({
+                                    "format": 'yyyy-mm-dd',
+                                    "todayHighlight": true,
+                                    "language": "zh-CN",
+                                    autoclose: true,
+                                    todayBtn: 'linked'
+                                }).on("changeDate",function(e){
+                                	
+                                	var input = $(e.target);
+                                	var id = input.attr("cid");
+                                	input.css("border","2px solid yellow");
+                                    var url = vue.uri+"/"+id;
+//                                     var url = "posts/"+id;
+//             						console.log(url);
+            						var value = e.target.value;
+            						console.log(value);
+                                    //axios.js 上传文件要用 formData 这种方式
+                                    var formData = new FormData();
+                                    formData.append("value", value);
+                                    axios.put(url,formData).then(function(response){
+                                    	vue.list();
+                                    	input.css("border","2px solid green");
+                                    });
+                                	
+                                });
+                            });
+                        });
+                    },
+                    update:function (id,e) {
+                    	var input = $(e.target);
+                    	input.css("border","2px solid yellow");
+                        var url = this.uri+"/"+id;
+//                         var url = "posts/"+id;
+// 						console.log(url);
+						var value = e.target.value;
+						console.log(value);
+                        //axios.js 上传文件要用 formData 这种方式
+                        var formData = new FormData();
+                        formData.append("value", value);
+                        axios.put(url,formData).then(function(response){
+                        	vue.list();
+                        	input.css("border","2px solid green");
+                        });
+                    }                   
+                }
+            });    	
+    });
+</script>
+
+<div class="wrapper" id="workingArea">
+  <div th:replace="include/admin/adminNavigator::html" ></div>
+  <div th:replace="include/admin/adminSidebar::html" ></div>
+
+
+
+  <div class="content-wrapper">
+    <section class="content-header">
+<!--       <h1> -->
+<!--         	配置管理 -->
+<!--         <small>配置管理</small> -->
+<!--       </h1> -->
+    </section>
+
+    <section class="content">
+		<div class="row">
+	        <div class="col-xs-12">
+	          <div class="box">
+	            <div class="box-header">
+	              <h3 class="box-title">配置清单</h3>
+	
+<!-- 	              <div class="box-tools"> -->
+<!-- 	                <div class="input-group input-group-sm" style="width: 150px;"> -->
+<!-- 	                  <input type="text" name="table_search" class="form-control pull-right" placeholder="Search"> -->
+	
+<!-- 	                  <div class="input-group-btn"> -->
+<!-- 	                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button> -->
+<!-- 	                  </div> -->
+<!-- 	                </div> -->
+<!-- 	              </div> -->
+	            </div>
+	            <!-- /.box-header -->
+	            <div class="box-body table-responsive no-padding">
+	              <table id="sort" class="table table-hover">
+	                <tr>
+	                  <th style="width:200px">名称</th>
+	                  <th style="width:200px">值</th>
+	                  <th>描述</th>
+	                </tr>
+	                <tbody>
+	                <template v-for="bean in beans ">
+		                <tr rowspan="2" >
+		                  <td>{{bean.name}}</td>
+		                  <td>
+		                  
+		                  	
+		                  	<input v-if="bean.key!='birthday'" type="text" :value="bean.value" @change="update(bean.id,$event)"  >
+		                  	<input v-if="bean.key=='birthday'" readOnly="readOnly" class="datepicker" :cid="bean.id" type="text" :value="bean.value"  >
+		                  </td>
+		                  <td>{{bean.desc}}</td>
+		                </tr>
+	                </template>
+	              </tbody></table>
+	            </div>
+	          </div>
+	          
+	          
+	          
+	          
+
+					          
+	        </div>
+	       
+        
+	        
+	      </div>
+	      
+    </section>
+  </div>
+ 	<div th:replace="include/admin/adminFooter::html" ></div>
+</div>
+</body>
+</html>

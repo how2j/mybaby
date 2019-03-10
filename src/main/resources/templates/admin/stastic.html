@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('统计信息')" ></head>
+
+<body class="hold-transition skin-blue  layout-boxed">
+
+<script>
+    $(function(){
+        var data4Vue = {
+                uri:'indexs/stastic',
+                pieData: [],
+            };
+
+        //ViewModel
+        var vue = new Vue({
+            el: '#workingArea',
+            data: data4Vue,
+            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                 //this.list(0);
+            	this.get();
+            },
+            methods: {
+                get:function(){
+                    var url = this.uri;
+                    axios.get(url).then(function(response) {
+                    	vue.pieData = response.data.data;
+                		var options ={ 
+                			    //Boolean - Whether we should show a stroke on each segment 
+                			    segmentShowStroke : true, 
+                			 
+                			    //String - The colour of each segment stroke 
+                			    segmentStrokeColor : "#ddd", 
+                			 
+                			    //Number - The width of each segment stroke 
+                			    segmentStrokeWidth : 1, 
+                			 
+                			    //Number - The percentage of the chart that we cut out of the middle 
+                			    percentageInnerCutout : 0, // This is 0 for Pie charts 
+                			 
+                			    //Number - Amount of animation steps 
+                			    animationSteps : 80, 
+                			 
+                			    //String - Animation easing effect 
+                			    animationEasing : "easeOutBounce", 
+                			 
+                			    //Boolean - Whether we animate the rotation of the Doughnut 
+                			    animateRotate : true, 
+                			 
+                			    //Boolean - Whether we animate scaling the Doughnut from the centre 
+                			    animateScale : false, 
+                			};        	
+            			var ctx = document.getElementById("pieChart").getContext("2d");
+            			window.myPie = new Chart(ctx).Pie(vue.pieData,options);
+                    });
+                }
+            }
+        });  
+        
+        
+
+    	
+    });
+    
+    
+</script>
+
+
+
+<div class="wrapper" id="workingArea">
+  <div th:replace="include/admin/adminNavigator::html" ></div>
+  <div th:replace="include/admin/adminSidebar::html" ></div>
+
+
+
+
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1>
+        	统计信息
+        <small>统计各个指数投入所占比重</small>
+      </h1>
+    </section>
+
+    <section class="content">
+		<div class="row">
+	        <div class="col-xs-12">
+			
+					
+					
+					<div class="box box-default">
+			            <div class="box-header with-border">
+			              <h3 class="box-title">各个指数占比</h3>
+			
+<!-- 			              <div class="box-tools pull-right"> -->
+<!-- 			                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i> -->
+<!-- 			                </button> -->
+<!-- 			                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button> -->
+<!-- 			              </div> -->
+			            </div>
+			            <div class="box-body">
+			              <div class="row">
+			                <div class="col-md-12">
+			                  <div class="chart-responsive" style="margin:10px auto; width:400px">
+			                    <canvas id="pieChart" height="165" width="328" style="width: 328px; height: 165px; "></canvas>
+			                  </div>
+			                </div>
+			              </div>
+			            </div>
+			            <!-- /.box-body -->
+			            <div class="box-footer no-padding">
+			              <ul class="nav nav-pills nav-stacked">
+			                <li v-for="d in pieData"><a href="#"> <i :style="'color:'+d.color" class="fa fa-circle-o"></i> {{d.label}}
+			                  <span class="pull-right" :style="'color:'+d.color">&#65509;{{d.value|formatMoneyFilter}} {{d.per}}%</span></a></li>
+<!-- 			                <li><a href="#">India <span class="pull-right text-green"><i class="fa fa-angle-up"></i> 4%</span></a> -->
+<!-- 			                </li> -->
+<!-- 			                <li><a href="#">China -->
+<!-- 			                  <span class="pull-right text-yellow"><i class="fa fa-angle-left"></i> 0%</span></a></li> -->
+<!-- 			              </ul> -->
+			            </div>
+			            <!-- /.footer -->
+		          </div>					
+			 </div>
+    </section>
+  </div>
+	<div th:replace="include/admin/adminFooter::html" ></div>
+</div>
+
+
+</body>
+</html>

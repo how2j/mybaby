@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/fore/foreHeader::html('首页')" ></head>
+
+
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+
+<body class="hold-transition skin-blue  layout-boxed">
+
+<script>
+function goPAGE() {
+	if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+		window.location.href="homepage4mobile";
+	}
+}
+goPAGE();
+
+	var JPos = {};
+	(function($){
+		$.$getAbsPos = function(p){
+			var _x = 0;
+			var _y = 0;
+			while(p.offsetParent){
+					_x += p.offsetLeft;
+					_y += p.offsetTop;
+					p = p.offsetParent;
+			}
+			
+			_x += p.offsetLeft;
+			_y += p.offsetTop;
+			
+			return {x:_x,y:_y};
+		};
+		
+		$.$getMousePos = function(evt){
+			var _x,_y;
+			evt = evt || window.event;
+			if(evt.pageX || evt.pageY){
+				_x = evt.pageX;
+				_y = evt.pageY;
+			}else if(evt.clientX || evt.clientY){
+				_x = evt.clientX + document.body.scrollLeft - document.body.clientLeft;
+				_y = evt.clientY + document.body.scrollTop - document.body.clientTop;
+			}else{
+				return $.$getAbsPos(evt.target);	
+			}
+			return {x:_x,y:_y};
+		}
+	})(JPos);
+    $(function(){
+    	function captureImage(e){
+
+		};   
+	
+    	function getPercentage(bigImage){
+			var mPos = JPos.$getMousePos();
+			var iPos = JPos.$getAbsPos(bigImage);
+			
+			window.status = (mPos.x - iPos.x) + " " + (mPos.y - iPos.y);
+			var x = (mPos.x - iPos.x);
+			var width = $(bigImage).width();
+			
+			var percentage = 0;
+			
+			percentage = x*100/width;			
+			return percentage;
+    	}
+    	function addEventListener(){
+    		$(".homepage-picture-big").mousemove(function(e){
+	    			var index=$(this).attr("index");
+	    			var total=$(this).attr("total");
+    			
+	    			var percentage = getPercentage(this);
+    				
+    				if(percentage<25){
+    					if(0==index)
+    						$(this).css("cursor","url('dist/img/small.cur'),auto");
+    					else
+    						$(this).css("cursor","url('dist/img/pic_prev.cur'),auto");
+    				}
+    				else if(percentage<75){
+    					$(this).css("cursor","url('dist/img/small.cur'),auto");
+    				}
+    				else{
+    					if(index==total-1)
+    						$(this).css("cursor","url('dist/img/small.cur'),auto");
+    					else
+	    					$(this).css("cursor","url('dist/img/pic_next.cur'),auto");   					
+    				}
+    		});
+    		$(".homepage-picture-big").unbind("click");
+    		$(".homepage-picture-big").click(function(){
+    			var index=$(this).attr("index");
+    			index = new Number(index);
+				console.log("index:"+index);
+
+    			var total=$(this).attr("total");
+    			var pid=$(this).attr("pid");
+    			var percentage = getPercentage(this);
+				
+				if(percentage<25){
+					if(0==index)
+						$(this).fadeOut(500);
+					else{
+						var img = $(".homepage-picture-small[pid="+pid+"][index="+(index-1)+"]");
+						var middleSrc = img.attr("middleSrc");
+						$(".selectedImage").removeClass("selectedImage");
+						img.addClass("selectedImage");
+						$(this).attr("src",middleSrc);
+						$(this).attr("index",index-1);
+					}
+				}
+				else if(percentage<75){
+					$(this).fadeOut(500);
+				}
+				else{
+					if(index==total-1)
+						$(this).fadeOut(500);
+					else{
+						console.log(".homepage-picture-small[pid="+pid+"][index="+(index+1)+"]");
+						var img = $(".homepage-picture-small[pid="+pid+"][index="+(index+1)+"]");
+						var middleSrc = img.attr("middleSrc");
+						$(".selectedImage").removeClass("selectedImage");
+						img.addClass("selectedImage");
+						$(this).attr("src",middleSrc);
+						$(this).attr("index",index+1);
+					}
+				}
+    		});
+    		$(".homepage-picture-small").click(function(){
+    			var middleSrc=$(this).attr("middleSrc");
+    			var pid=$(this).attr("pid");
+    			var index=$(this).attr("index");
+    			var total=$(this).attr("total");
+    			
+    			var imageBig=$(".homepage-picture-big[pid="+pid+"]");
+    			var imageSmalls=$(".homepage-picture-small[pid="+pid+"]");
+    			
+    			imageSmalls.removeClass("selectedImage");
+    			
+    			$(this).addClass("selectedImage");
+    			
+    			imageBig.attr("src",middleSrc);
+    			imageBig.attr("index",index);
+    			imageBig.attr("total",total);
+    			imageBig.fadeIn(500);
+    			
+    			
+    		});
+    		
+       		$("video").click(function(){
+       		    if(this.paused){
+       		        this.play();
+       		    }else{
+       		        this.pause();
+       		    }      
+       		});	
+       		
+//         	$(".small_video").each(function(){
+//         		$(this).on("loadeddata",captureImage);
+//         	});
+
+        	
+       	    $("#modal-info").on("hidden.bs.modal",function(){
+       	    	$(".videoOnFront")[0].pause();
+       	    });
+       	    $("#modal-info").on("show.bs.modal",function(){
+	       	 	if (screenfull.enabled) {
+	       			screenfull.request($(".videoOnFront")[0]);
+	       		}
+       	    	$(".videoOnFront")[0].play();
+       	    });
+        	
+    		
+    	}
+    	
+        var data4Vue = {
+                uri:'homepageData',
+                beans: [],
+                pagination:{},
+                file: null
+            };
+
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    this.list(0);
+                },
+                methods: {
+                    list:function(start){
+                        var url =  this.uri+ "?start="+start;
+                        axios.get(url).then(function(response) {
+                            vue.pagination = response.data;
+                            vue.beans = response.data.content;
+                            
+                            vue.$nextTick(function(){
+                            	addEventListener();
+                            });
+                        });
+                    },
+                    show: function (id) {
+                    	var value = 'uploaded/small_video/'+id+'_small.mp4';
+						$("#originalVideo").attr("src",value);
+						console.log($("#originalVideo").attr("src"));
+                    },
+                    jump: function(page){
+                        jump(page,vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function(start){
+                        jumpByNumber(start,vue);
+                    }
+                }
+            });    	
+
+            
+            
+    });
+    
+    
+
+
+
+    
+</script>
+
+<div id="workingArea">
+			<div style="width:400px;margin:30px auto 10px auto;text-align: center">
+			
+				<img class="img-circle" style="width:50px;margin-right:20px" src="dist/img/baby.png">
+				<span style="font-size:1.2em;color:#888" ><span class="babyName"></span>的私人相册</span>
+				<hr style="border-top:1px solid #f0f0f0">
+			</div>
+
+
+	<div class="homepage">
+			
+             <template v-for="bean in beans ">
+             	<div>
+             		<div>【{{bean.age}} {{bean.createDate|formatDateFilter}}】 {{bean.title}}</div>
+             		<div style="margin:20px 0px 20px 50px" class="text-muted">{{bean.text}}</div>
+             		<div>
+             			<img index="0" total="0" :pid="bean.id" class="homepage-picture-big" src=""/>
+             		</div>
+             		<div style="width:800px" v-if="bean.videos.length!=0" >
+             			<template v-for="video in bean.videos">
+		             		<video :vid="video.id" class="small_video" style="display:none"  controls="controls">
+							</video>
+							<a href="#nowhere"  @click="show(video.id)" data-toggle="modal" data-target="#modal-info">
+								<div :vid="video.id" :style="'width:100px;height:100px;float:left;margin:2px;background-image:url(uploaded/preview/'+video.id+'.jpg)'" class="output">
+									<img src="dist/img/ico_play.png" style="padding:20px 20px;">
+								</div>
+							</a>
+             			</template>
+             			<div style="clear:both"></div>
+             		</div>
+             		
+             		<div style="width:800px" v-if="bean.pictures.length!=0" >
+             				<img :title="picture.name" :index="index" :total="bean.pictures.length" :pid="bean.id" :middleSrc="'uploaded/middlePicture/'+picture.id+'.jpg'" class="homepage-picture-small" v-for="picture,index in bean.pictures" :src="'uploaded/smallPicture/'+picture.id+'.jpg'"/>
+             		</div>
+             		<div style="clear:both"></div>
+
+             				
+             		<hr/>
+             	</div>
+             </template>
+             
+	        <div style="width:100%" class="modal modal-info fade" id="modal-info">
+	          <div class="modal-dialog">
+	            <div class="modal-content">
+	              <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                  <span aria-hidden="true">&times;</span></button>
+	                <h4 class="modal-title">视频</h4>
+	              </div>
+	              <div class="modal-body">
+	              
+	              	
+	              	<video class="videoOnFront" id="originalVideo" src="" style="width:100%" controls="controls">
+					</video>
+	              	
+	              </div>
+	              <div class="modal-footer">
+	                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">关闭</button>
+<!-- 	                <button type="button" class="btn btn-outline">Save changes</button> -->
+	              </div>
+	            </div>
+	            <!-- /.modal-content -->
+	          </div>
+	          <!-- /.modal-dialog -->
+	        </div>             
+
+       
+       
+       	<div th:replace="include/fore/forePage::html" ></div>
+
+				<div th:replace="include/fore/foreFooter::html" ></div>
+	</div>
+</div>
+	
+</body>
+</html>

@@ -1,0 +1,272 @@
+<template th:fragment="html(title)" > 
+
+	  <!-- style.css -->
+	  <link rel="stylesheet" href="css/fore/style.css">
+	  <link rel="stylesheet" href="css/3rd/3rd.css">
+	  <!-- Bootstrap 3.3.7 -->
+<!-- 	  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"> -->
+	  <!-- Font Awesome -->
+<!-- 	  <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"> -->
+	  <!-- Ionicons -->
+<!-- 	  <link rel="stylesheet" href="bower_components/Ionicons/css/ionicons.min.css"> -->
+	  <!-- icheck -->
+<!-- 	  <link rel="stylesheet" href="plugins/iCheck/all.css"> -->
+	  <!-- Theme style -->
+<!-- 	  <link rel="stylesheet" href="dist/css/AdminLTE.min.css"> -->
+	  <!-- AdminLTE Skins. Choose a skin from the css/skins
+	       folder instead of downloading all of them to reduce the load. -->
+<!-- 	  <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css"> -->
+	  <!-- Morris chart -->
+<!-- 	  <link rel="stylesheet" href="bower_components/morris.js/morris.css"> -->
+	  <!-- jvectormap -->
+<!-- 	  <link rel="stylesheet" href="bower_components/jvectormap/jquery-jvectormap.css"> -->
+	  <!-- Date Picker -->
+<!-- 	  <link rel="stylesheet" href="bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css"> -->
+	  
+	  
+	  <!-- Daterange picker -->
+<!-- 	  <link rel="stylesheet" href="bower_components/bootstrap-daterangepicker/daterangepicker.css"> -->
+	  <!-- bootstrap wysihtml5 - text editor -->
+<!-- 	  <link rel="stylesheet" href="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css"> -->
+		<script src="js/3rd/3rd.js"></script>
+		
+<!-- 		<script src="js/photoswipe.js"></script> -->
+<!-- 		<script src="js/photoswipe-ui-default.min.js"></script> -->
+
+	<!-- jQuery 3 -->
+<!-- 	<script src="bower_components/jquery/dist/jquery.min.js"></script> -->
+	<!-- jQuery UI 1.11.4 -->
+<!-- 	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script> -->
+	<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+	<!-- datepicker -->
+<!-- 	<script src="bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script> -->
+	
+	
+	<script>
+	  $.widget.bridge('uibutton', $.ui.button);
+	</script>
+	<!-- Bootstrap 3.3.7 -->
+<!-- 	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script> -->
+	<!-- Morris.js charts -->
+<!-- 	<script src="bower_components/raphael/raphael.min.js"></script> -->
+<!-- 	<script src="bower_components/bootstrap-datepicker/dist/locales/bootstrap-datepicker.zh-CN.min.js"></script> -->
+<!-- 	<script1 src="bower_components/morris.js/morris.min.js"></script> -->
+	<!-- Sparkline -->
+<!-- 	<script src="bower_components/jquery-sparkline/dist/jquery.sparkline.min.js"></script> -->
+	<!-- jvectormap -->
+<!-- 	<script src="plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script> -->
+<!-- 	<script src="plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script> -->
+	<!-- jQuery Knob Chart -->
+<!-- 	<script src="bower_components/jquery-knob/dist/jquery.knob.min.js"></script> -->
+	<!-- daterangepicker -->
+<!-- 	<script src="bower_components/moment/min/moment.min.js"></script> -->
+<!-- 	<script src="bower_components/bootstrap-daterangepicker/daterangepicker.js"></script> -->
+
+	<!-- Bootstrap WYSIHTML5 -->
+<!-- 	<script src="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script> -->
+	<!-- Slimscroll -->
+<!-- 	<script src="bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script> -->
+	<!-- FastClick -->
+<!-- 	<script src="bower_components/fastclick/lib/fastclick.js"></script> -->
+	<!-- AdminLTE App -->
+<!-- 	<script src="dist/js/adminlte.min.js"></script> -->
+	<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+<!-- 	<script1 src="dist/js/pages/dashboard.js"></script> -->
+	<!-- AdminLTE for demo purposes -->
+<!-- 	<script1 src="dist/js/demo.js"></script>	   -->
+	
+	<!-- iCheck 1.0.1 -->
+<!-- 	<script1 src="plugins/iCheck/icheck.min.js"></script> -->
+	<!-- chartjs -->
+<!-- 	<script src="bower_components/chart.js/Chart.min.js"></script> -->
+	
+<!-- 	<script src="js/vue/2.5.16/vue.min.js"></script> -->
+<!-- 	<script src="js/axios/0.17.1/axios.min.js"></script> -->
+<!-- 	<script src="js/moment/2.22.2/moment.js"></script>  -->
+<!-- 	<script src="bower_components/screenfull/4.0.0/screenfull.min.js"></script>  -->
+	
+	
+	
+	<!-- sortable -->
+<!-- 	<script src="js/sortable/1.0.0/Sortable.min.js"></script> -->	
+	<script>
+	//判断是否为空
+	function checkEmpty(value,text){
+		
+		if(null==value || value.length==0){
+			alert(text+ "不能为空");
+			return false;
+		}
+		return true;
+	}	
+	function checkLength(value,length,text){
+		
+		if(value.length>length){
+			alert(text+ "的长度不能超过" + length);
+			return false;
+		}
+		return true;
+	}	
+	
+    //获取地址栏参数的函数
+    function getUrlParms(para){
+	    var search=location.search; //页面URL的查询部分字符串
+	    var arrPara=new Array(); //参数数组。数组单项为包含参数名和参数值的字符串，如“para=value”
+	    var arrVal=new Array(); //参数值数组。用于存储查找到的参数值
+	 
+	    if(search!=""){	
+	        var index=0;
+	        search=search.substr(1); //去除开头的“?”
+	        arrPara=search.split("&");
+	 
+	        for(i in arrPara){
+	            var paraPre=para+"="; //参数前缀。即参数名+“=”，如“para=”
+	            if(arrPara[i].indexOf(paraPre)==0&& paraPre.length<arrPara[i].length){
+	                arrVal[index]=decodeURI(arrPara[i].substr(paraPre.length)); //顺带URI解码避免出现乱码
+	                index++;
+	            }
+	        }
+	    }
+	 
+	    if(arrVal.length==1){
+	        return arrVal[0];
+	    }else if(arrVal.length==0){
+	        return null;
+	    }else{
+	        return arrVal;
+	    }
+    }	
+    
+    //判断是否数字 (小数和整数)
+	function checkNumber(value, text){
+		
+		if(value.length==0){
+			alert(text+ "不能为空");
+			return false;
+		}
+		if(isNaN(value)){
+			alert(text+ "必须是数字");
+			return false;
+		}
+		return true;
+	}
+    //判断是否整数
+	function checkInt(value, text){
+		
+		if(value.length==0){
+			alert(text+ "不能为空");
+			return false;
+		}
+		if(parseInt(value)!=value){
+			alert(text+ "必须是整数");
+			return false;
+		}
+		return true;
+	}
+	
+    //确实是否要删除
+	function checkDeleteLink(){
+		var confirmDelete = confirm("确认要删除");
+		if(confirmDelete)
+			return true;
+		return false;		
+	}
+    //跳转函数
+    function jump(page,vue){
+		if('first'== page && !vue.pagination.first)
+			vue.list(0);
+		
+		else if('pre'== page &&	vue.pagination.hasPrevious )
+			vue.list(vue.pagination.number-1);
+		
+		else if('next'== page && vue.pagination.hasNext)
+			vue.list(vue.pagination.number+1);					
+		
+		else if('last'== page && !vue.pagination.last)
+			vue.list(vue.pagination.totalPages-1);    	
+    }
+    //跳转函数
+    function jumpByNumber(start,vue){
+    	if(start!=vue.pagination.number)
+			vue.list(start);       	
+    }
+    
+    
+    function formatMoney(num){
+        num = new String(num);
+        num = num.toString().replace(/\$|\,/g,'');
+        if(isNaN(num))
+            num = "0";
+        sign = (num == (num = Math.abs(num)));
+        num = Math.floor(num*100+0.50000000001);
+        cents = num%100;
+        num = Math.floor(num/100).toString();
+        if(cents<10)
+            cents = "0" + cents;
+        for (var i = 0; i < Math.floor((num.length-(1+i))/3); i++)
+            num = num.substring(0,num.length-(4*i+3))+','+
+                num.substring(num.length-(4*i+3));
+        return (((sign)?'':'-') + num + '.' + cents);
+    }
+    
+    Vue.filter("shortStringFilter", function(value, length){
+        if (!value)
+            return '';
+        
+        if(value.length<=length)
+        	return value;
+        
+        return value.substring(0,length) + "...";
+    });
+    Vue.filter("stringEmpty", function(value){
+        if (!value)
+            return '<未填>';
+        
+        return value;
+    });
+    Vue.filter("subStringFilter", function(value, start, end){
+        if (!value)
+            return '';
+        return value.substring(start,end);
+    });
+
+    Vue.filter("formatMoneyFilter", function(value){
+        return formatMoney(value);
+    });
+
+    Vue.filter('formatDateFilter', function (value, formatString) {
+        if(null==value)
+            return "";
+        formatString = formatString || 'YYYY-MM-DD';
+        return moment(value).format(formatString);
+    });
+    
+    var menuName;
+    $(function(){
+        var vue4sidebar = new Vue({
+            el: '#sidebar',
+            data: {
+            	isActive: true,
+            	currentMenu:''
+            },
+            mounted:function(){ 
+            	var index = new String(location).lastIndexOf("/")+1;
+            	var fileName = new String(location).substring(index,location.length);
+            	this.currentMenu = fileName;
+            },
+            methods: {
+                
+            }
+        });    	
+        
+    	axios.get("serverInfo").then(function(result){
+    		$(".babyName").html(result.data.babyName);
+    	});
+    });
+    menuName = "1";
+
+    
+	</script>	
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 	
+	<title th:text="${title}" ></title>
+</template>

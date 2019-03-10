@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('记录回收站')" ></head>
+
+<body class="hold-transition skin-blue  layout-boxed">
+
+<script>
+    $(function(){
+
+    	
+        var data4Vue = {
+                uri:'posts',
+                beans: [],
+                bean: { id: 0, title: '', text:'',createDate:'' },
+                bean4update: { id: 0, title: '', text:'',createDate:'' },
+                pagination:{},
+                file: null
+            };
+
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    this.list(0);
+                    this.initDate4add();
+                    this.initDate4update();
+                },
+                methods: {
+                	initDate4add:function(){
+                        $('#date4add').datepicker({
+                            "format": 'yyyy-mm-dd',
+                            "todayHighlight": true,
+                            "language": "zh-CN",
+                            autoclose: true,
+                            todayBtn: 'linked'
+                        }).on("changeDate",function(e){
+                        	var month = (e.date.getMonth()+1);
+                        	if(month <10)
+                        		month = '0'+month;
+                        	var day = (e.date.getDate());
+                        	if(day <10)
+                        		day = '0'+day;
+                        	vue.bean.createDate = e.date.getFullYear()+"-"+month+"-"+day;
+                        });
+                     	$('#date4add').datepicker('update', new Date());
+                  		this.bean.createDate = $("#createDate4add").val();
+                	},
+                	initDate4update:function(){
+                        $('#date4update').datepicker({
+                            "format": 'yyyy-mm-dd',
+                            "todayHighlight": true,
+                            "language": "zh-CN",
+                            autoclose: true,
+                            todayBtn: 'linked'
+                        }).on("changeDate",function(e){
+                        	var month = (e.date.getMonth()+1);
+                        	if(month <10)
+                        		month = '0'+month;
+                        	var day = (e.date.getDate());
+                        	if(day <10)
+                        		day = '0'+day;
+                        	vue.bean4update.createDate = e.date.getFullYear()+"-"+month+"-"+day;
+                        });
+                	},                	
+                    list:function(start){
+                        var url =  this.uri+"/deleted"+ "?start="+start;
+                        axios.get(url).then(function(response) {
+                            vue.pagination = response.data;
+                            vue.beans = response.data.content	;
+                        });
+                    },
+                    add: function () {
+                        if(!checkEmpty(this.bean.title, "记录标题"))
+                            return;
+                        if(!checkLength(this.bean.title, 100,"记录标题"))
+                            return;
+                        if(!checkLength(this.bean.title, 250,"记录描述"))
+                            return;
+//                         if(!checkEmpty(this.file, "分类图片"))
+//                             return;
+                        var url = this.uri;
+
+                        //axios.js 上传文件要用 formData 这种方式
+                        var formData = new FormData();
+//                         formData.append("image", this.file);
+                        formData.append("title", this.bean.title);
+                        formData.append("text", this.bean.text);
+                        formData.append("createDate", this.bean.createDate);
+                        axios.post(url,formData)
+                        .then(function(response){
+                            vue.list(0);
+                            vue.bean={ id: 0, title: '', text:'',createDate:'' },
+                            $("#postPic").val('');
+                            vue.file = null;
+                         	$('#date4add').datepicker('update', new Date());
+                      		vue.bean.createDate = $("#createDate4add").val();
+                        });
+                        scrollTo(0,0);
+                    },
+                    get:function(id){
+                        var url = this.uri+"/"+id;
+                        axios.get(url).then(function(response) {
+                            vue.bean4update = response.data;
+                            var date = new Date(vue.bean4update.createDate);;
+                            
+                            var month = (date.getMonth()+1);
+                        	if(month <10)
+                        		month = '0'+month;
+                        	var day = (date.getDate());
+                        	if(day <10)
+                        		day = '0'+day;                        	
+                        	vue.bean4update.createDate = date.getFullYear()+"-"+month+"-"+day;
+                            
+//                             vue.bean4update.createDate = new Date(vue.bean4update.createDate);
+                            
+//                             $('.input-group.date4update').datepicker('update', new Date(vue.bean4update.createDate));
+
+                        });
+//                         this.showAdd = false;
+//                         this.showUpdate = true;
+                        $("#modal4edit").modal('show');
+                    },
+                    update:function () {
+                        if(!checkEmpty(this.bean4update.title, "记录标题"))
+                            return;
+                        if(!checkLength(this.bean4update.title, 100,"记录标题"))
+                            return;
+                        if(!checkLength(this.bean4update.title, 250,"记录描述"))
+                            return;
+                        var url = this.uri+"/"+this.bean4update.id;
+
+                        //axios.js 上传文件要用 formData 这种方式
+                        var formData = new FormData();
+                        formData.append("title", this.bean4update.title);
+                        formData.append("text", this.bean4update.text);
+                        formData.append("createDate", this.bean4update.createDate);
+                        axios.put(url,formData).then(function(response){
+                        	vue.list(0);
+                            $("#modal4edit").modal('hide');                        	
+                        });
+                    },                    
+                    recoverBean: function (id) {
+                        var url = this.uri+"/recover/"+id;
+                        axios.get(url).then(function(response){
+                                vue.list(0);
+                        });
+                    },
+                    jump: function(page){
+                        jump(page,vue); //定义在adminHeader.html 中
+                    },
+                    jumpByNumber: function(start){
+                        jumpByNumber(start,vue);
+                    }
+                }
+            });    	
+
+                   
+            
+    });
+
+
+
+    
+</script>
+
+<div class="wrapper" id="workingArea">
+  <div th:replace="include/admin/adminNavigator::html" ></div>
+  <div th:replace="include/admin/adminSidebar::html" ></div>
+
+
+
+  <div class="content-wrapper">
+    <section class="content-header">
+    </section>
+
+    <section class="content">
+		<div class="row">
+	        <div class="col-xs-12">
+	          <div class="box">
+	            <div class="box-header">
+	              <h3 class="box-title">被删除的记录清单</h3>
+	
+	              <div class="box-tools">
+	                <div class="input-group input-group-sm" style="width: 150px;">
+<!-- 	                  <input type="text" name="table_search" class="form-control pull-right" placeholder="Search"> -->
+	
+	                  <div class="input-group-btn">
+<!-- 	                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button> -->
+	                  </div>
+	                </div>
+	              </div>
+	            </div>
+	            <!-- /.box-header -->
+	            <div class="box-body table-responsive no-padding">
+	              <table id="sort" class="table table-hover">
+	                <tr>
+<!-- 	                  <th class="thinth">id</th> -->
+	                  <th >视频</th>
+	                  <th >图片</th>
+	                  
+	                  <th >标题</th>
+	                  <th>描述</th>
+	                  <th class="dateth">创建日期</th>
+	                  <th class="thinth">恢复</th>
+	                </tr>
+	                <tbody>
+	                <template v-for="bean in beans ">
+		                <tr rowspan="2" >
+<!-- 		                  <td>{{bean.id}}</td> -->
+		                  <td>
+		                  	<span style="font-size:1.5em" :href="'admin_video_list?pid=' + bean.id "> 
+		                  	{{bean.videos.length}}
+		                  	<span  class="glyphicon glyphicon-facetime-video"></span> 
+		                  	
+		                  	</span>
+		                  </td>
+		                  <td>
+		                  	<span style="font-size:1.5em" :href="'admin_picture_list?pid=' + bean.id "> 
+		                  	{{bean.pictures.length}}
+		                  	<span class="glyphicon glyphicon-picture"></span> 
+		                  	</span>
+		                  </td>		                  
+		                  <td>
+			                  <span :title="bean.title" href="#nowhere" @click="get(bean.id)">
+			                  	{{bean.title |stringEmpty| shortStringFilter(12)}}
+			                  </span>
+		                  </td>
+		                  <td>
+		                  	   <span :title="bean.text" href="#nowhere" @click="get(bean.id)">
+			                  	{{bean.text |stringEmpty| shortStringFilter(25)}}
+			                  </span>
+		                  </td>
+		                  <td>{{bean.createDate|formatDateFilter}}</td>
+
+		                  <td>
+	          		          <a href="#nowhere"  @click="recoverBean(bean.id)"><span class="   glyphicon glyphicon-refresh"></span></a>
+    		              </td>
+		                </tr>
+
+	                </template>
+	                
+	              </tbody></table>
+	            </div>
+	          </div>
+	          
+	          <div th:replace="include/admin/adminPage::html" ></div>
+				<div class="modal modal-default fade" id="modal4edit">
+		          <div class="modal-dialog">
+		            <div class="modal-content">
+		              <div class="modal-header">
+		                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		                  <span aria-hidden="true">×</span></button>
+		                <h4 class="modal-title">修改记录</h4>
+		              </div>
+		              <div class="modal-body">
+			          <div class="box box-info" style="margin:10px auto">
+				              <div class="box-body">
+				                <div class="form-group">
+				                  <label for="exampleInputEmail1">记录标题</label>
+				                  <input type="text" class="form-control" @keyup.enter1="add" v-model.trim="bean4update.title" placeholder="标题">
+				                  <input type="hidden" v-model.trim="bean4update.id">
+				                </div>
+				                <div class="form-group">
+				                  <label for="exampleInputPassword1">记录描述</label>
+				                  <textarea style="height:150px" class="form-control" @keyup.enter1="add" v-model.trim="bean4update.text" placeholder="描述"></textarea>
+				                </div>
+				                <div class="form-group">
+				                  <label for="exampleInputPassword1">记录日期</label>
+									<div class="input-group date" id="date4update">
+									  <input id="createDate4update" type="text" class="form-control" v-model.trim="bean4update.createDate" ><span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+									</div>
+				                </div>				                
+				              </div>
+				              
+				              
+				           
+				              
+			          </div>
+		              </div>
+		              <div class="modal-footer">
+		                <button type="button" class="btn btn-primary pull-left" data-dismiss="modal">关闭</button>
+		                <button type="button" @click="update" class="btn btn-primary">提交</button>
+		              </div>
+		            </div>
+		            <!-- /.modal-content -->
+		          </div>
+		          <!-- /.modal-dialog -->
+		        </div>	  	          
+	        </div>
+	       
+        
+	        
+	      </div>
+	      
+    </section>
+  </div>
+  
+	<div th:replace="include/admin/adminFooter::html" ></div>
+</div>
+</body>
+</html>

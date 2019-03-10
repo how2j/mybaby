@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include/admin/adminHeader::html('前台登录')" ></head>
+<body class="hold-transition lockscreen">
+
+<script>
+    $(function(){
+	        var data4Vue = {
+                uri:'configs',
+                password:''
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+//                     this.list();
+                },
+                methods: {
+                    login:function () {
+                        var url = this.uri+"/forepassword";
+                        console.log(url);
+                        var formData = new FormData();
+                        formData.append("password", this.password);
+                        axios.put(url,formData).then(function(response){
+                        	if(response.data=="success"){
+                        		location.href="homepage";
+                        		return;
+                        	}
+                        	else{
+                        		alert("密码错误");
+                        	}
+                        });
+                    }                   
+                }
+            });    	
+    });
+</script>
+
+<div class="wrapper" id="workingArea">
+<!--   <div th:replace="include/admin/adminNavigator::html" ></div> -->
+<!--   <div th:replace="include/admin/adminSidebar::html" ></div> -->
+	<div>
+		<div class="lockscreen-wrapper">
+			  <div class="lockscreen-logo">
+			    	宝宝相册
+			    </a>
+			  </div>
+			  <!-- User name -->
+			  <div class="lockscreen-name">请输入密码</div>
+			
+			  <!-- START LOCK SCREEN ITEM -->
+			  <div class="lockscreen-item">
+			    <!-- lockscreen image -->
+			    <div class="lockscreen-image">
+			      <img src="dist/img/baby.png" alt="User Image">
+			    </div>
+			    <!-- /.lockscreen-image -->
+			
+			    <!-- lockscreen credentials (contains the form) -->
+			    <div class="lockscreen-credentials">
+			      <div class="input-group">
+			        <input type="password" class="form-control" v-model.trim="password" @keyup.enter="login" placeholder="password">
+			        <div class="input-group-btn">
+			          <button @click="login" type="button" class="btn"><i class="fa fa-arrow-right text-muted"></i></button>
+			        </div>
+			      </div>
+			    </div>
+			
+			  </div>
+			  <!-- /.lockscreen-item -->
+			  <div class="help-block text-center">
+			      <a href="admin">后台</a>
+			
+<!-- 					  默认密码是 admin -->
+			  </div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
