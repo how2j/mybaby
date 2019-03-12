@@ -33,12 +33,12 @@ public class ConfigService {
 
 
 
-	public List<Config> list() {
+	public synchronized List<Config> list() {
 		List<Config> configs=configDAO.findByOrderByIdAsc();
 		return configs;
 	}
 
-	public void init() {
+	public synchronized void init() {
 		for (String[] init : initInfo) {
 			String name = init[0];
 			String key = init[1];
@@ -58,26 +58,26 @@ public class ConfigService {
 		}
 	}
 
-	public void add(Config bean) {
+	public synchronized void add(Config bean) {
 		configDAO.save(bean);
 	}
 
-	public void delete(int id) {
+	public synchronized void delete(int id) {
 		configDAO.delete(id);
 	}
 
-	public Config get(int id) {
+	public synchronized Config get(int id) {
 		Config c= configDAO.findOne(id);
 		return c;
 	}
-	public String get(String key) {
+	public synchronized String get(String key) {
 		Config c= configDAO.getByKey(key);
 		if(null==c)
 			return null;
 		return c.getValue();
 				
 	}
-	public void update(Config bean) {
+	public synchronized void update(Config bean) {
 		configDAO.save(bean);
 	}
 }
